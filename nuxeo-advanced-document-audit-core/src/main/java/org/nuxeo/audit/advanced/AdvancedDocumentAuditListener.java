@@ -152,6 +152,8 @@ public class AdvancedDocumentAuditListener implements EventListener {
         List<Serializable> oldList = Arrays.asList((Serializable[]) oldValue);
         List<Serializable> newList = Arrays.asList((Serializable[]) newValue);
 
+        fieldName = normalizeFieldName(fieldName);
+
         //get Added Values
         List<Serializable> added = new ArrayList<>(newList);
         added.removeAll(oldList);
@@ -210,8 +212,9 @@ public class AdvancedDocumentAuditListener implements EventListener {
         entry.setPrincipalName(doc.getCoreSession().getPrincipal().getName());
         entry.setRepositoryId(doc.getRepositoryName());
 
+        fieldName = normalizeFieldName(fieldName);
+
         Map<String, ExtendedInfo> extended = new HashMap<>();
-        if (fieldName.startsWith("/")) fieldName = fieldName.substring(1);
         extended.put(FIELD_NAME, logger.newExtendedInfo(fieldName));
 
         String formatedOldValue = formatPropertyValue(oldValue);
@@ -236,6 +239,15 @@ public class AdvancedDocumentAuditListener implements EventListener {
             return value.toString();
         } else {
             return EMPTY_VALUE;
+        }
+    }
+
+
+    protected String normalizeFieldName(String fieldName) {
+        if (fieldName.startsWith("/")) {
+            return fieldName.substring(1);
+        } else {
+            return fieldName;
         }
     }
 
