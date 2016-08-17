@@ -157,7 +157,7 @@ public class AdvancedDocumentAuditListener implements EventListener {
         added.removeAll(oldList);
         for (Serializable addedValue : added) {
             LogEntry entry = getEntry(context, fieldName, null, addedValue);
-            entry.setComment("Added " + formatPropertyValue(addedValue));
+            entry.setComment(fieldName + " : Added " + formatPropertyValue(addedValue));
             entries.add(entry);
         }
 
@@ -166,7 +166,7 @@ public class AdvancedDocumentAuditListener implements EventListener {
         removed.removeAll(newList);
         for (Serializable removedValue : removed) {
             LogEntry entry = getEntry(context, fieldName, removedValue, null);
-            entry.setComment("Removed " + formatPropertyValue(removedValue));
+            entry.setComment(fieldName + " : Removed " + formatPropertyValue(removedValue));
             entries.add(entry);
         }
 
