@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<component name="org.nuxeo.audit.advanced.listener">
+    <extension target="org.nuxeo.ecm.core.event.EventServiceComponent" point="listener">
+        <listener name="documentTrailListener" async="false" postCommit="false"
+                  class="org.nuxeo.audit.advanced.AdvancedDocumentAuditListener" priority="1000">
+            <event>beforeDocumentModification</event>
+        </listener>
+    </extension>
+</component>

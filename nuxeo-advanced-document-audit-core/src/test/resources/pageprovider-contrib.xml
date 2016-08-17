@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+
+<component name="audit-pageprovider">
+
+    <extension target="org.nuxeo.ecm.platform.query.api.PageProviderService"
+               point="providers">
+
+        <genericPageProvider name="GetAllEntriesByEvent"
+                             class="org.nuxeo.ecm.platform.audit.api.AuditPageProvider">
+            <pattern>
+                from LogEntry log where log.eventId = ? AND log.docUUID = ?
+            </pattern>
+            <sort column="log.id" ascending="true"/>
+            <pageSize>2</pageSize>
+        </genericPageProvider>
+
+    </extension>
+</component>

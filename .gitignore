@@ -1,0 +1,14 @@
+node_modules
+dist
+bower_components
+.tmp
+.publish/
+target
+.classpath
+.project
+npm-debug.log
+.settings/
+bin/
+.DS_Store
+.idea
+*.iml
