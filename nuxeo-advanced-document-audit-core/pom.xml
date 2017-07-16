@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.nuxeo.audit.advanced</groupId>
         <artifactId>nuxeo-advanced-document-audit-parent</artifactId>
-        <version>1.1-SNAPSHOT</version>
+        <version>9.1-SNAPSHOT</version>
     </parent>
     <artifactId>nuxeo-advanced-document-audit-core</artifactId>
     <name>Nuxeo Advanced Document Audit Core</name>
