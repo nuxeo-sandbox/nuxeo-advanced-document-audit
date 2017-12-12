@@ -4,8 +4,11 @@
       "parent_package": "org.nuxeo.audit.advanced",
       "parent_artifact": "nuxeo-advanced-document-audit-parent",
       "nuxeo_version": "8.3",
-      "package": "org.nuxeo.audit.advanced"
+      "package": "org.nuxeo.audit.advanced",
+      "parent_version": "9.3-SNAPSHOT"
     },
-    "multi": true
+    "multi": true,
+    "lastRemote": "C:\\Users\\mvach\\.cache\\node-yeoman-remote-cache\\nuxeo\\generator-nuxeo-meta\\2.8.0",
+    "_nuxeo_version": "9.3-SNAPSHOT"
   }
 }

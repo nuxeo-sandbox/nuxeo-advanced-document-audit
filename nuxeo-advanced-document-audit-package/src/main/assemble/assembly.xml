@@ -7,9 +7,8 @@
     <property name="outdir" value="${maven.project.build.directory}"/>
     <!-- Include your artifacts in the graph adding your groupId to groupPrefixes -->
     <artifact:nuxeo-expand includeTestScope="true" groupPrefixes="org.nuxeo,org.nuxeo.audit.advanced"/>
-    <!-- For Nuxeo IDE being able to use that distribution as a SDK -->
-    <artifact:print output="${outdir}/artifacts.properties" mode="sdk"/>
-    <artifact:print output="${outdir}/test-artifacts.properties" mode="sdk" scopes="test"/>
+    <artifact:print output="${outdir}/nuxeo-advanced-document-audit-artifacts.properties" mode="sdk"/>
+    <artifact:print output="${outdir}/nuxeo-advanced-document-audit-test-artifacts.properties" mode="sdk" scopes="test"/>
     <!-- Prints the graph for debugging purpose -->
     <artifact:print output="${outdir}/dependency-tree.log"/>
     <tstamp/>
@@ -25,21 +24,22 @@
         <filter token="DISTRIB_VERSION" value="${nuxeo.distribution.version}"/>
       </filterset>
     </copy>
-    <copy file="${outdir}/artifacts.properties" todir="${outdir}/marketplace/install"/>
-    <copy file="${outdir}/test-artifacts.properties" todir="${outdir}/marketplace/install"/>
+    <copy file="${outdir}/nuxeo-advanced-document-audit-artifacts.properties" todir="${outdir}/marketplace/install"/>
+    <copy file="${outdir}/nuxeo-advanced-document-audit-test-artifacts.properties" todir="${outdir}/marketplace/install"/>
 
     <!-- Base distribution NXR -->
     <copy todir="${outdir}">
-      <artifact:file key="org.nuxeo.ecm.distribution:nuxeo-nxr-server::zip"/>
+      <artifact:file key="org.nuxeo.ecm.distribution:nuxeo-nxr-server::zip" />
     </copy>
 
     <!-- Nuxeo bundles -->
     <copy todir="${outdir}/nxr/bundles" overwrite="true">
       <artifact:set>
         <includes>
-          <artifact groupId="org.nuxeo*"/>
+          <artifact groupId="org.nuxeo*" />
+          <artifact groupId="nuxeo-studio" />
           <!-- Include your artifacts using their groupId for instance -->
-          <artifact groupId="org.nuxeo.audit.advanced*"/>
+          <artifact groupId="org.nuxeo.audit.advanced*" />
         </includes>
         <excludes>
           <artifact groupId="${maven.project.groupId}" artifactId="${maven.project.artifactId}" version="${maven.project.version}" type="${maven.project.packaging}"/>
@@ -54,14 +54,14 @@
     <copy todir="${outdir}/nxr/lib" overwrite="true">
       <artifact:set>
         <includes>
-          <artifact groupId="!org.nuxeo*"/>
-          <artifact groupId="org.nuxeo.lib*"/>
+          <artifact groupId="!org.nuxeo*" />
+          <artifact groupId="org.nuxeo.lib*" />
         </includes>
         <excludes>
-          <artifact scope="test"/>
-          <artifact scope="provided"/>
-          <artifact type="pom"/>
-          <artifact groupId="nuxeo-studio"/>
+          <artifact scope="test" />
+          <artifact scope="provided" />
+          <artifact type="pom" />
+          <artifact groupId="nuxeo-studio" />
           <!-- Filter out your artifacts using their groupId for instance -->
           <artifact groupId="org.nuxeo.audit.advanced*"/>
         </excludes>
@@ -110,20 +110,11 @@
     <var
       name="install.properties"
       value="${line.separator}
-  &lt;copy file=&quot;${package.root}/install/artifacts.properties&quot;${line.separator}
+  &lt;copy file=&quot;${package.root}/install/nuxeo-advanced-document-audit-artifacts.properties&quot;${line.separator}
     todir=&quot;${env.server.home}/sdk&quot; overwrite=&quot;true&quot; /&gt;${line.separator}
-  &lt;copy file=&quot;${package.root}/install/test-artifacts.properties&quot;${line.separator}
+  &lt;copy file=&quot;${package.root}/install/nuxeo-advanced-document-audit-test-artifacts.properties&quot;${line.separator}
     todir=&quot;${env.server.home}/sdk&quot; overwrite=&quot;true&quot; /&gt;"/>
-
-    <var name="install.templates" value=""/>
-    <if>
-      <available file="${outdir}/marketplace/install/templates"/>
-      <then>
-        <var name="install.templates" value="${line.separator}
-  &lt;copy dir=&quot;${package.root}/install/templates&quot; todir=&quot;${env.templates}&quot; overwrite=&quot;true&quot; /&gt;${line.separator}
-  /&gt;${line.separator}"/>
-      </then>
-    </if>
+    
 
     <copy file="src/main/resources/install.xml" todir="${outdir}/marketplace" overwrite="true">
       <filterset>
