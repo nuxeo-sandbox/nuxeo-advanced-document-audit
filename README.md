@@ -4,7 +4,11 @@ nuxeo-advanced-document-audit
 
 ## List of Features (details below)
 
-This plugin provides advanced document audit capabilities to the Nuxeo Platform
+This plugin provides advanced document audit capabilities to the Nuxeo Platform.
+
+It outputs old/new values for the fields modified.
+
+It is provided as an example, a source of inspiration showing how to add custom entries to the audit log, don't hesitate to fork and tune, depending on your exact needs.
 
 ## Build
 
@@ -12,7 +16,7 @@ Assuming maven is correctly setup on your computer:
 
 ```
 git clone
-mvn package
+mvn clean install
 ```
 
 ## Install

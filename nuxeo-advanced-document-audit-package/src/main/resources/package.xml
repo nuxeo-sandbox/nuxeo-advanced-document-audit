@@ -4,8 +4,8 @@
   <description>
     <p>Put here an HTML description of your Nuxeo Package.</p>
   </description>
-  <!-- <home-page>http://doc.nuxeo.com/</home-page> -->
-  <vendor></vendor>
+  <home-page>https://github.com/nuxeo-sandbox/nuxeo-advanced-document-audit</home-page>
+  <vendor>Nuxeo</vendor>
   <installer restart="true" />
   <uninstaller restart="true" />
   <!-- <hotreload-support>false</hotreload-support> -->
@@ -16,8 +16,7 @@
   <production-state>testing</production-state>
   <supported>false</supported>
   <platforms>
-    <platform>server-@DISTRIB_VERSION@</platform>
-    <platform>server-@DISTRIB_VERSION@-HF*</platform>
+    <platform>lts-@NUXEO_TARGET_VERSION@</platform>
   </platforms>
   <!-- Dependencies on other packages -->
   <!-- <dependencies> -->
@@ -38,5 +37,5 @@
   <license>Apache License, Version 2.0</license>
   <license-url>http://www.apache.org/licenses/LICENSE-2.0</license-url>
   <!-- Visibility: PRIVATE | MARKETPLACE | DEV | PUBLIC -->
-  <visibility>DEV</visibility>
+  <visibility>PUBLIC</visibility>
 </package>
