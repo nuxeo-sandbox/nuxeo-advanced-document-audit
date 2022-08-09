@@ -29,6 +29,8 @@ import org.nuxeo.runtime.test.runner.*;
 import org.nuxeo.runtime.transaction.TransactionHelper;
 
 import javax.persistence.EntityManager;
+
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 @Features({ManagementFeature.class, PlatformFeature.class})
@@ -51,6 +53,12 @@ public class AuditFeature extends SimpleFeature {
                     public boolean await(long deadline) throws InterruptedException {
                         return Framework.getService(AuditLogger.class)
                                 .await(deadline - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
+                    }
+
+                    @Override
+                    public boolean await(Duration arg0) throws InterruptedException {
+                        return Framework.getService(AuditLogger.class)
+                                .await(arg0.toMillis(), TimeUnit.MILLISECONDS);
                     }
 
                 });
