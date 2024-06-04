@@ -4,37 +4,67 @@
   <parent>
     <groupId>org.nuxeo</groupId>
     <artifactId>nuxeo-parent</artifactId>
-    <version>2021.23</version>
+    <version>2023.12</version>
   </parent>
 
   <groupId>org.nuxeo.audit.advanced</groupId>
   <artifactId>nuxeo-advanced-document-audit-parent</artifactId>
-  <version>2021.2-SNAPSHOT</version>
+  <version>2023.2-SNAPSHOT</version>
   <name>Nuxeo Advanced Document Audit Parent</name>
   <description/>
   <packaging>pom</packaging>
+
+  <properties>
+    <!-- Skip Nuxeo enforcer rules by default -->
+    <nuxeo.skip.enforcer>true</nuxeo.skip.enforcer>
+    <nuxeo.target.version>2023.*</nuxeo.target.version>
+  </properties>
 
   <modules>
     <module>nuxeo-advanced-document-audit-core</module>
     <module>nuxeo-advanced-document-audit-package</module>
   </modules>
 
+  <scm />
+  <licenses />
+  <mailingLists />
+  <issueManagement />
+  <ciManagement />
+  <developers />
+  <distributionManagement />
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.nuxeo.audit.advanced</groupId>
+        <artifactId>nuxeo-advanced-document-audit-core</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.nuxeo.audit.advanced</groupId>
+        <artifactId>nuxeo-advanced-document-audit-package</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
   <repositories>
     <repository>
-      <id>public</id>
-      <url>http://maven.nuxeo.org/nexus/content/groups/public</url>
+      <id>maven-public</id>
+      <url>https://packages.nuxeo.com/repository/maven-public/</url>
       <releases>
         <enabled>true</enabled>
       </releases>
       <snapshots>
-        <enabled>false</enabled>
+        <updatePolicy>always</updatePolicy>
+        <enabled>true</enabled>
       </snapshots>
     </repository>
     <repository>
-      <id>public-snapshot</id>
-      <url>http://maven.nuxeo.org/nexus/content/groups/public-snapshot</url>
+      <id>maven-internal</id>
+      <url>https://packages.nuxeo.com/repository/maven-internal/</url>
       <releases>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
       </releases>
       <snapshots>
         <updatePolicy>always</updatePolicy>
@@ -56,9 +86,8 @@
 
   <pluginRepositories>
     <pluginRepository>
-      <id>public</id>
-      <url>http://maven.nuxeo.org/nexus/content/groups/public</url>
-      <name>Nuxeo releases</name>
+      <id>maven-public</id>
+      <url>https://packages.nuxeo.com/repository/maven-public/</url>
       <releases>
         <enabled>true</enabled>
       </releases>
@@ -67,18 +96,16 @@
       </snapshots>
     </pluginRepository>
   </pluginRepositories>
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>org.nuxeo.audit.advanced</groupId>
-        <artifactId>nuxeo-advanced-document-audit-core</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.nuxeo.audit.advanced</groupId>
-        <artifactId>nuxeo-advanced-document-audit-package</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>3.3.1</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
 </project>

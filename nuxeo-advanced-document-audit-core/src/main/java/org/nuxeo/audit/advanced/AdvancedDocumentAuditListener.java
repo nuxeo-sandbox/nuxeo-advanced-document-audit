@@ -59,7 +59,7 @@ public class AdvancedDocumentAuditListener implements EventListener {
 			return;
 		}
 
-		AuditLogger logger = Framework.getLocalService(AuditLogger.class);
+		AuditLogger logger = Framework.getService(AuditLogger.class);
 		if (logger == null) {
 			log.error("No AuditLogger implementation is available");
 			return;
@@ -120,14 +120,14 @@ public class AdvancedDocumentAuditListener implements EventListener {
 		// Handle Scalar List Properties
 		if (oldProperty instanceof ArrayProperty) {
 			entries.addAll(
-					processScalarList(context, oldProperty.getPath(), oldProperty.getValue(), newProperty.getValue()));
+					processScalarList(context, oldProperty.getXPath(), oldProperty.getValue(), newProperty.getValue()));
 		}
 		// org.nuxeo.ecm.core.api.model.Property
 		return entries;
 	}
 
 	protected LogEntry processScalarProperty(Context context, Property oldProperty, Property newProperty) {
-		return getEntry(context, oldProperty.getPath(), oldProperty.getValue(), newProperty.getValue());
+		return getEntry(context, oldProperty.getXPath(), oldProperty.getValue(), newProperty.getValue());
 	}
 
 	protected List<LogEntry> processScalarList(Context context, String fieldName, Object oldValue, Object newValue) {
@@ -181,7 +181,7 @@ public class AdvancedDocumentAuditListener implements EventListener {
 		String oldFilename = oldBlob != null ? oldBlob.getFilename() : null;
 		Blob newBlob = (Blob) newProperty.getValue();
 		String newFilename = newBlob != null ? newBlob.getFilename() : null;
-		return getEntry(context, oldProperty.getPath(), oldFilename, newFilename);
+		return getEntry(context, oldProperty.getXPath(), oldFilename, newFilename);
 	}
 
 	protected LogEntry getEntry(Context context, String fieldName, Serializable oldValue, Serializable newValue) {

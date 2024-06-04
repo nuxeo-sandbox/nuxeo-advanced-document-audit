@@ -9,7 +9,7 @@
     <artifact:nuxeo-expand includeTestScope="true" groupPrefixes="org.nuxeo,org.nuxeo.audit.advanced" />
     <!-- Prints the graph for debugging purpose -->
     <artifact:print output="${outdir}/dependency-tree.log" />
-    <tstamp />
+    <tstamp/>
 
     <delete failonerror="false" dir="${outdir}/nxr" />
     <mkdir dir="${outdir}/nxr" />
@@ -124,11 +124,6 @@
         <filter token="TEMPLATES" value="${install.templates}" />
       </filterset>
     </copy>
-
-    <!-- Studio Registries Extraction -->
-    <nx:studioExtraction todir="${outdir}/marketplace">
-      <fileset dir="${outdir}/marketplace/install/bundles" />
-    </nx:studioExtraction>
 
     <zip destfile="${outdir}/${maven.project.artifactId}-${maven.project.version}.zip" basedir="${outdir}/marketplace" />
     <artifact:attach file="${outdir}/${maven.project.artifactId}-${maven.project.version}.zip" type="zip" />
