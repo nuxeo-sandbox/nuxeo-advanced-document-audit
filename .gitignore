@@ -16,6 +16,10 @@ bin/
 *.iml
 *.ipr
 *.iws
+<<<<<<< HEAD
+=======
+*.log
+>>>>>>> 72f4a3825634d95c140a982ec4b7dfbbfa38e299
 .metadata
 .mylar
 *.orig
@@ -28,6 +32,7 @@ bin/
 *-bak
 *.bak
 *~gen
+<<<<<<< HEAD
 nashorn_code_cache
 
 
@@ -138,3 +143,5 @@ public
 
 # TernJS port file
 .tern-port
+=======
+>>>>>>> 72f4a3825634d95c140a982ec4b7dfbbfa38e299
