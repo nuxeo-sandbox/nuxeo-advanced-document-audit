@@ -1,0 +1,14 @@
+{
+  "generator-nuxeo": {
+    "promptValues": {
+      "parent_package": "org.nuxeo.audit.advanced",
+      "parent_artifact": "nuxeo-advanced-document-audit-parent",
+      "nuxeo_version": "8.3",
+      "package": "org.nuxeo.audit.advanced",
+      "parent_version": "2023.1-SNAPSHOT"
+    },
+    "multi": true,
+    "lastRemote": "/Users/thibaud.arguillere/.cache/node-yeoman-remote-cache/nuxeo/generator-nuxeo-meta/stable",
+    "_nuxeo_version": "9.3-SNAPSHOT"
+  }
+}
