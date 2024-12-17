@@ -28,7 +28,7 @@ import org.nuxeo.runtime.management.ManagementFeature;
 import org.nuxeo.runtime.test.runner.*;
 import org.nuxeo.runtime.transaction.TransactionHelper;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
