@@ -23,19 +23,21 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.nuxeo.audit.api.LogEntry;
+import org.nuxeo.audit.test.AuditFeature;
 import org.nuxeo.ecm.automation.OperationException;
 import org.nuxeo.ecm.automation.test.AutomationFeature;
 import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
+import org.nuxeo.ecm.core.api.SortInfo;
 import org.nuxeo.ecm.core.api.impl.blob.FileBlob;
-import org.nuxeo.ecm.platform.audit.api.LogEntry;
 import org.nuxeo.ecm.platform.query.api.PageProvider;
+import org.nuxeo.ecm.platform.query.api.PageProviderDefinition;
 import org.nuxeo.ecm.platform.query.api.PageProviderService;
 import org.nuxeo.runtime.test.runner.Deploy;
 import org.nuxeo.runtime.test.runner.Features;
 import org.nuxeo.runtime.test.runner.FeaturesRunner;
-import org.nuxeo.runtime.test.runner.LocalDeploy;
 
 import jakarta.inject.Inject;
 import java.io.File;
@@ -44,12 +46,14 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 
+import static org.junit.Assert.assertNotNull;
+import static org.nuxeo.audit.api.LogEntryConstants.LOG_ID;
+
 @RunWith(FeaturesRunner.class)
-@Features({AutomationFeature.class, AuditFeature.class})
-@Deploy({"nuxeo-advanced-document-audit-core"})
-@LocalDeploy({
-        "nuxeo-advanced-document-audit-core:pageprovider-contrib.xml",
-        "nuxeo-advanced-document-audit-core:schema-contrib.xml",
+@Features({AuditFeature.class, AutomationFeature.class})
+@Deploy({
+    "nuxeo-advanced-document-audit-core",
+    "nuxeo-advanced-document-audit-core:schema-contrib.xml"
 })
 public class TestAdvancedDocumentAuditListener {
 
@@ -69,7 +73,7 @@ public class TestAdvancedDocumentAuditListener {
     }
 
     @Test
-    public void testStringModification() throws IOException, OperationException {
+    public void testStringModification() {
         DocumentModel doc = session.createDocumentModel("/", "File", "File");
         doc = session.createDocument(doc);
         doc.setPropertyValue("dc:title", NEW_STRING_VALUE);
@@ -77,13 +81,13 @@ public class TestAdvancedDocumentAuditListener {
         session.save();
         List<LogEntry> entries = getEntries(doc);
         Assert.assertEquals("Audit contains one entry", 1, entries.size());
-        LogEntry entry = entries.get(0);
+        LogEntry entry = entries.getFirst();
         checkEntry(entry, "dc:title",
                 AdvancedDocumentAuditListener.EMPTY_VALUE, NEW_STRING_VALUE);
     }
 
     @Test
-    public void testMultiStringModification() throws IOException, OperationException {
+    public void testMultiStringModification() {
         DocumentModel doc = session.createDocumentModel("/", "File", "File");
         doc.setPropertyValue("dc:subjects", new String[]{"science"});
         doc = session.createDocument(doc);
@@ -95,7 +99,7 @@ public class TestAdvancedDocumentAuditListener {
     }
 
     @Test
-    public void testStringInComplexModification() throws IOException, OperationException {
+    public void testStringInComplexModification() {
         DocumentModel doc = session.createDocumentModel("/", "TEST", "TEST");
         doc = session.createDocument(doc);
         HashMap<String, Serializable> complexValue = new HashMap<>();
@@ -105,13 +109,13 @@ public class TestAdvancedDocumentAuditListener {
         session.save();
         List<LogEntry> entries = getEntries(doc);
         Assert.assertEquals("Audit contains one entry", 1, entries.size());
-        LogEntry entry = entries.get(0);
+        LogEntry entry = entries.getFirst();
         checkEntry(entry, "test:complex/string",
                 AdvancedDocumentAuditListener.EMPTY_VALUE, NEW_STRING_VALUE);
     }
 
     @Test
-    public void testStringListInComplexModification() throws IOException, OperationException {
+    public void testStringListInComplexModification() {
         DocumentModel doc = session.createDocumentModel("/", "TEST", "TEST");
         doc = session.createDocument(doc);
 
@@ -124,7 +128,7 @@ public class TestAdvancedDocumentAuditListener {
 
         List<LogEntry> entries = getEntries(doc);
         Assert.assertEquals("Audit contains one entry", 1, entries.size());
-        LogEntry entry = entries.get(0);
+        LogEntry entry = entries.getFirst();
         checkEntry(entry, "test:complex/stringlist",
                 AdvancedDocumentAuditListener.EMPTY_VALUE, NEW_STRING_VALUE);
     }
@@ -140,7 +144,7 @@ public class TestAdvancedDocumentAuditListener {
         session.save();
         List<LogEntry> entries = getEntries(doc);
         Assert.assertEquals("Audit contains one entry", 1, entries.size());
-        LogEntry entry = entries.get(0);
+        LogEntry entry = entries.getFirst();
         checkEntry(entry, "content", AdvancedDocumentAuditListener.EMPTY_VALUE, "text.txt");
     }
 
@@ -148,21 +152,30 @@ public class TestAdvancedDocumentAuditListener {
     private void checkEntry(LogEntry entry, String fieldname, String expectedOldValue, String expectedNewValue) {
         Assert.assertEquals(
                 fieldname,
-                entry.getExtendedInfos().get(AdvancedDocumentAuditListener.FIELD_NAME).getValue(String.class));
+                entry.getExtendedValue(AdvancedDocumentAuditListener.FIELD_NAME));
         Assert.assertEquals(
                 expectedNewValue,
-                entry.getExtendedInfos().get(AdvancedDocumentAuditListener.NEW_VALUE).getValue(String.class));
+                entry.getExtendedValue(AdvancedDocumentAuditListener.NEW_VALUE));
         Assert.assertEquals(
                 expectedOldValue,
-                entry.getExtendedInfos().get(AdvancedDocumentAuditListener.OLD_VALUE).getValue(String.class));
+                entry.getExtendedValue(AdvancedDocumentAuditListener.OLD_VALUE));
     }
 
     private List<LogEntry> getEntries(DocumentModel doc) {
-        PageProvider<?> pp = pps.getPageProvider(
-                PAGE_PROVIDER_NAME, null, Long.valueOf(5), Long.valueOf(0),
-                new HashMap<>(), AdvancedDocumentAuditListener.EVENT_ID, doc.getId());
-        Assert.assertNotNull("Page Provider is missing", pp);
-        return (List<LogEntry>) pp.getCurrentPage();
+        PageProviderDefinition ppdef = pps.getPageProviderDefinition("DOCUMENT_HISTORY_PROVIDER");
+        assertNotNull(ppdef);
+
+        DocumentModel searchDoc = session.createDocumentModel("BasicAuditSearch");
+        searchDoc.setPathInfo("/", "auditsearch");
+        searchDoc = session.createDocument(searchDoc);
+        searchDoc.setPropertyValue("basicauditsearch:eventIds",
+                new String[] { AdvancedDocumentAuditListener.EVENT_ID });
+        List<SortInfo> sorts = List.of(new SortInfo(LOG_ID, false));
+
+        PageProvider<LogEntry>  pp = (PageProvider<LogEntry>) pps.getPageProvider(
+                "DOCUMENT_HISTORY_PROVIDER", sorts, 20L, 0L, new HashMap<>(), doc);
+        pp.setSearchDocumentModel(searchDoc);
+        return pp.getCurrentPage();
     }
 
 

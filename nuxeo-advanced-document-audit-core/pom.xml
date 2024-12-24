@@ -13,18 +13,22 @@
         <dependency>
             <groupId>org.nuxeo.runtime</groupId>
             <artifactId>nuxeo-runtime</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.nuxeo.ecm.core</groupId>
             <artifactId>nuxeo-core-api</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.nuxeo.ecm.core</groupId>
             <artifactId>nuxeo-core-event</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.nuxeo.ecm.platform</groupId>
-            <artifactId>nuxeo-platform-audit-api</artifactId>
+            <artifactId>nuxeo-platform-audit-core</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <!-- TEST DEPENDENCIES -->
@@ -33,7 +37,11 @@
             <artifactId>nuxeo-automation-test</artifactId>
             <scope>test</scope>
         </dependency>
-
+        <dependency>
+            <groupId>org.nuxeo.ecm.platform</groupId>
+            <artifactId>nuxeo-platform-audit-test</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
 </project>

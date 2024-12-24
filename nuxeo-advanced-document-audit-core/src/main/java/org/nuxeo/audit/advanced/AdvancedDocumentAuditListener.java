@@ -21,6 +21,9 @@ package org.nuxeo.audit.advanced;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.nuxeo.audit.api.LogEntry;
+import org.nuxeo.audit.api.LogEntryBuilder;
+import org.nuxeo.audit.service.AuditBackend;
 import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.model.Property;
@@ -30,9 +33,6 @@ import org.nuxeo.ecm.core.event.Event;
 import org.nuxeo.ecm.core.event.EventContext;
 import org.nuxeo.ecm.core.event.EventListener;
 import org.nuxeo.ecm.core.event.impl.DocumentEventContext;
-import org.nuxeo.ecm.platform.audit.api.AuditLogger;
-import org.nuxeo.ecm.platform.audit.api.ExtendedInfo;
-import org.nuxeo.ecm.platform.audit.api.LogEntry;
 import org.nuxeo.runtime.api.Framework;
 
 import java.io.Serializable;
@@ -55,18 +55,17 @@ public class AdvancedDocumentAuditListener implements EventListener {
 	@Override
 	public void handleEvent(Event event) {
 		EventContext ectx = event.getContext();
-		if (!(ectx instanceof DocumentEventContext)) {
+		if (!(ectx instanceof DocumentEventContext docCtx)) {
 			return;
 		}
 
-		AuditLogger logger = Framework.getService(AuditLogger.class);
+		AuditBackend logger = Framework.getService(AuditBackend.class);
 		if (logger == null) {
 			log.error("No AuditLogger implementation is available");
 			return;
 		}
 
-		DocumentEventContext docCtx = (DocumentEventContext) ectx;
-		DocumentModel newDoc = docCtx.getSourceDocument();
+        DocumentModel newDoc = docCtx.getSourceDocument();
 
 		DocumentModel oldDoc = newDoc.getCoreSession().getDocument(newDoc.getRef());
 
@@ -94,7 +93,7 @@ public class AdvancedDocumentAuditListener implements EventListener {
 			}
 		}
 
-		if (entries.size() > 0) {
+		if (!entries.isEmpty()) {
 			context.logger.addLogEntries(entries);
 		}
 	}
@@ -127,7 +126,7 @@ public class AdvancedDocumentAuditListener implements EventListener {
 	}
 
 	protected LogEntry processScalarProperty(Context context, Property oldProperty, Property newProperty) {
-		return getEntry(context, oldProperty.getXPath(), oldProperty.getValue(), newProperty.getValue());
+		return getEntryBuilder(context, oldProperty.getXPath(), oldProperty.getValue(), newProperty.getValue()).build();
 	}
 
 	protected List<LogEntry> processScalarList(Context context, String fieldName, Object oldValue, Object newValue) {
@@ -147,9 +146,9 @@ public class AdvancedDocumentAuditListener implements EventListener {
 			added.removeAll(oldList);
 		}
 		for (Serializable addedValue : added) {
-			LogEntry entry = getEntry(context, fieldName, null, addedValue);
-			entry.setComment(fieldName + " : Added " + formatPropertyValue(addedValue));
-			entries.add(entry);
+			LogEntryBuilder builder = getEntryBuilder(context, fieldName, null, addedValue);
+			builder.comment(fieldName + " : Added " + formatPropertyValue(addedValue));
+			entries.add(builder.build());
 		}
 
 		// get Removed Value
@@ -157,9 +156,9 @@ public class AdvancedDocumentAuditListener implements EventListener {
 			List<Serializable> removed = new ArrayList<>(oldList);
 			removed.removeAll(newList);
 			for (Serializable removedValue : removed) {
-				LogEntry entry = getEntry(context, fieldName, removedValue, null);
-				entry.setComment(fieldName + " : Removed " + formatPropertyValue(removedValue));
-				entries.add(entry);
+				LogEntryBuilder builder = getEntryBuilder(context, fieldName, removedValue, null);
+				builder.comment(fieldName + " : Removed " + formatPropertyValue(removedValue));
+				entries.add(builder.build());
 			}
 		}
 
@@ -181,44 +180,35 @@ public class AdvancedDocumentAuditListener implements EventListener {
 		String oldFilename = oldBlob != null ? oldBlob.getFilename() : null;
 		Blob newBlob = (Blob) newProperty.getValue();
 		String newFilename = newBlob != null ? newBlob.getFilename() : null;
-		return getEntry(context, oldProperty.getXPath(), oldFilename, newFilename);
+		return getEntryBuilder(context, oldProperty.getXPath(), oldFilename, newFilename).build();
 	}
 
-	protected LogEntry getEntry(Context context, String fieldName, Serializable oldValue, Serializable newValue) {
+	protected LogEntryBuilder getEntryBuilder(Context context, String fieldName, Serializable oldValue, Serializable newValue) {
 
-		AuditLogger logger = context.logger;
 		Event event = context.event;
 		DocumentModel doc = context.newDoc;
 
-		LogEntry entry = logger.newLogEntry();
-		entry.setEventId(EVENT_ID);
-		entry.setCategory("Document");
-		entry.setEventDate(new Date(event.getTime()));
-		entry.setDocUUID(doc.getRef());
-		entry.setDocLifeCycle(doc.getCurrentLifeCycleState());
-		entry.setPrincipalName(doc.getCoreSession().getPrincipal().getName());
-		entry.setRepositoryId(doc.getRepositoryName());
+		LogEntryBuilder builder = LogEntry.builder(EVENT_ID, new Date(event.getTime()));
+		builder.category("Document")
+				.docUUID(doc.getRef())
+				.docLifeCycle(doc.getCurrentLifeCycleState())
+				.principalName(doc.getCoreSession().getPrincipal().getName())
+				.repositoryId(doc.getRepositoryName());
 
 		fieldName = normalizeFieldName(fieldName);
-
-		Map<String, ExtendedInfo> extended = new HashMap<>();
-		extended.put(FIELD_NAME, logger.newExtendedInfo(fieldName));
+		builder.extended(FIELD_NAME, fieldName);
 
 		String formatedOldValue = formatPropertyValue(oldValue);
 		String formatedNewValue = formatPropertyValue(newValue);
+		builder.extended(OLD_VALUE,formatedOldValue).extended(NEW_VALUE,formatedNewValue);
 
-		extended.put(OLD_VALUE, logger.newExtendedInfo(formatedOldValue));
-		extended.put(NEW_VALUE, logger.newExtendedInfo(formatedNewValue));
-		entry.setExtendedInfos(extended);
-
-		entry.setComment(fieldName + " : " + formatedOldValue + " -> " + formatedNewValue);
-		return entry;
+		builder.comment(fieldName + " : " + formatedOldValue + " -> " + formatedNewValue);
+		return builder;
 	}
 
 	protected String formatPropertyValue(Serializable value) {
-		if (value instanceof Calendar) {
-			Calendar calendar = (Calendar) value;
-			String pattern = "MM/dd/yyyy";
+		if (value instanceof Calendar calendar) {
+            String pattern = "MM/dd/yyyy";
 			SimpleDateFormat format = new SimpleDateFormat(pattern);
 			return format.format(calendar.getTime());
 		} else if (value != null) {
@@ -236,14 +226,13 @@ public class AdvancedDocumentAuditListener implements EventListener {
 		}
 	}
 
-	class Context {
+	protected static class Context {
+		private final DocumentModel newDoc;
+		private final DocumentModel oldDoc;
+		private final Event event;
+		private final AuditBackend logger;
 
-		private DocumentModel newDoc;
-		private DocumentModel oldDoc;
-		private Event event;
-		private AuditLogger logger;
-
-		public Context(DocumentModel newDoc, DocumentModel oldDoc, Event event, AuditLogger logger) {
+		public Context(DocumentModel newDoc, DocumentModel oldDoc, Event event, AuditBackend logger) {
 			this.newDoc = newDoc;
 			this.oldDoc = oldDoc;
 			this.event = event;

@@ -1,8 +1,8 @@
 <!-- See documentation at http://doc.nuxeo.com/x/HgIz -->
 <package type="addon" name="nuxeo-advanced-document-audit" version="@VERSION@">
-  <title>Nuxeo advanced document audit</title>
+  <title>Nuxeo Advanced Document Audit</title>
   <description>
-    <p>Put here an HTML description of your Nuxeo Package.</p>
+    <p>Track document property changes in the audit log</p>
   </description>
   <home-page>https://github.com/nuxeo-sandbox/nuxeo-advanced-document-audit</home-page>
   <vendor>Hyland</vendor>
@@ -15,10 +15,9 @@
   <!-- Production State: production_ready | testing | proto -->
   <production-state>testing</production-state>
   <supported>false</supported>
-  <target-platform>
-    <name>lts</name>
-    <version>[2023.0,2024.99)</version>
-  </target-platform>
+  <platforms>
+    <platform>lts-@NUXEO_TARGET_VERSION@</platform>
+  </platforms>
   <!-- Dependencies on other packages -->
   <!-- <dependencies> -->
   <!-- <package>another-package:1.0.0:1.0.0</package> -->
