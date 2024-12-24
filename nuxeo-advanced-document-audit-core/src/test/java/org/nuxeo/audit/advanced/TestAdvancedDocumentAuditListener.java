@@ -57,8 +57,6 @@ import static org.nuxeo.audit.api.LogEntryConstants.LOG_ID;
 })
 public class TestAdvancedDocumentAuditListener {
 
-    private static final String PAGE_PROVIDER_NAME = "GetAllEntriesByEvent";
-
     private static final String NEW_STRING_VALUE = "testNewValue";
 
     @Inject
@@ -135,7 +133,7 @@ public class TestAdvancedDocumentAuditListener {
 
 
     @Test
-    public void testBlobPropertyModification() throws IOException, OperationException {
+    public void testBlobPropertyModification() {
         DocumentModel doc = session.createDocumentModel("/", "File", "File");
         doc = session.createDocument(doc);
         Blob blob = new FileBlob(new File(getClass().getResource("/files/text.txt").getPath()));
