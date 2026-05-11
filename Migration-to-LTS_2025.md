@@ -41,12 +41,17 @@ Side notes: logging switched to Log4j2; inner `Context` is now a `record`.
 <extension target="org.nuxeo.audit.service.AuditComponent" point="routes">
   <route name="advanced-document-audit">
     <backend name="default" />
-    <event name="Property Modification" />
+    <event name="propertyModification" />
   </route>
 </extension>
 ```
 
 The new file is also declared in `MANIFEST.MF` (`Nuxeo-Component`).
+
+Note: the event id was renamed from the legacy `"Property Modification"` (with a space)
+to `propertyModification` (lower-camelCase) to match Nuxeo's built-in event id convention
+(`documentCreated`, `documentModified`, …) and to allow Web UI translation via the
+`eventType.<eventId>` i18n key pattern.
 
 ## Test changes
 

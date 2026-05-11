@@ -14,22 +14,82 @@ It is provided as an example, a source of inspiration showing how to add custom 
 
 This plugin targets Nuxeo LTS 2025 (`2025.1.0-SNAPSHOT`, target platform `[2025.0,2026.99)`).
 
-The Nuxeo audit subsystem was rewritten in LTS 2025; this plugin was migrated to the new
-`AuditRouter` / `LogEntry.builder()` API. See [Migration-to-LTS_2025.md](./Migration-to-LTS_2025.md)
-for details.
+The Nuxeo audit subsystem was rewritten in LTS 2025; this plugin was migrated to the new `AuditRouter` / `LogEntry.builder()` API. See [Migration-to-LTS_2025.md](./Migration-to-LTS_2025.md) for details.
 
-## Build
+## Audit Entries
 
-Assuming maven is correctly setup on your computer:
+Entries written by this plugin use:
 
+- `eventId = "propertyModification"`
+- `category = DocumentEventCategories.EVENT_DOCUMENT_CATEGORY`, which is Nuxeo's default document audit category.
+
+Reusing the default category means the entries aredisplayed and filterable in the Web UI audit table out of the box:
+
+- Web UI's `nuxeo-audit-search` resolves the column label via
+  `i18n('eventCategory.' + entry.category)`. The shipped i18n bundles already define `eventCategory.eventDocumentCategory => "Document"` (and translations for every locale), so no custom `messages*.json` contribution is needed for the category.
+- The category filter dropdown is fed from the `eventCategories` vocabulary, which seeds `eventDocumentCategory` by default — our entries appear under the existing "Document" filter without any extra directory contribution.
+
+### Web UI translation of the event id
+
+The plugin provides the 2 files expected for translation in the UI, see messages.json and messages.properties in the `resources/web/nuxeo.war` folder.
+
+### Registering the eventId in the "Performed Actions" filter
+
+Shipping the translations is not enough — for the eventId to **appear** in the audit filter dropdown at all, it must exist as a row in the `eventTypes` vocabulary. But:
+
+* Duplicating, in Studio, the eventTpes vocabulary in Studio to override it is a bit risky: If other components add their own entries, they will be lost
+* Automatically adding the entry when Nuxeo starts requires what we think is overkill code for this purpose (create a Nuxeo Component, register it, register code for the "afterStart" event, etc.)
+
+So, we suggest this simple approach: A one-shot install step via a single REST call:
+
+```bash
+curl -s -u USER:PASSWORD -X POST -H 'Content-Type:application/json' \
+    "SERVER/nuxeo/api/v1/directory/eventTypes" \
+    -d '{
+       "entity-type": "directoryEntry",
+       "directoryName": "eventTypes",
+       "properties": {
+         "id": "propertyModification",
+         "label": "Property Modification"
+       }
+     }'
 ```
-git clone
+
+> [!Note]
+> Use an Administrator account (the `eventTypes` directory is a system directory).
+
+
+## Local Build & Deploy / Marketplace Package Deployment
+
+### Build and Deploy Locally
+
+```bash
+git clone https://github.com/nuxeo-sandbox/nuxeo-advanced-document-audit
+cd nuxeo-advanced-document-audit
 mvn clean install
 ```
 
-## Install
+To skip unit testing, add `-DskipTests`.
 
-Install the package on your instance.
+The Marketplace package is generated at:
+```
+nuxeo-advanced-document-audit-package/target/nuxeo-advanced-document-audit-package-{VERSION}}-*.zip
+```
+
+Install it via `nuxeoctl`:
+```bash
+nuxeoctl mp-install nuxeo-advanced-document-audit-package-{VERSION}.zip
+```
+
+### Deploy from Nuxeo Marketplace
+
+This plugin is available as a package on the [Nuxeo Marketplace](https://connect.nuxeo.com/nuxeo/site/marketplace/package/nuxeo-advanced-document-audit), you can just:
+
+```bash
+nuxeoctl mp-install nuxeo-advanced-document
+```
+
+
 
 # Support
 
@@ -45,12 +105,10 @@ This is a moving project (no API maintenance, no deprecation process, etc.) If a
 
 # About Nuxeo
 
-Nuxeo Platform is an open source Content Services platform, written in Java. Data can be stored in both SQL & NoSQL databases.
+Nuxeo Platform is an open source highly scalable, cloud-native, enterprise content management product with rich multimedia support, written in Java. Data can be stored in both SQL & NoSQL databases.
 
 The development of the Nuxeo Platform is mostly done by Nuxeo employees with an open development model.
 
 The source code, documentation, roadmap, issue tracker, testing, benchmarks are all public.
 
-Typically, Nuxeo users build different types of information management solutions for [document management](https://www.nuxeo.com/solutions/document-management/), [case management](https://www.nuxeo.com/solutions/case-management/), and [digital asset management](https://www.nuxeo.com/solutions/dam-digital-asset-management/), use cases. It uses schema-flexible metadata & content models that allows content to be repurposed to fulfill future use cases.
-
-More information is available at [www.nuxeo.com](https://www.nuxeo.com).
+More information is available at [Hyland/Nuxeo](https://www.hyland.com/en/solutions/products/nuxeo-platform).

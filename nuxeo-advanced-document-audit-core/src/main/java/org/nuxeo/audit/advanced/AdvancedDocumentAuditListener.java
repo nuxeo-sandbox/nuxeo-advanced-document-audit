@@ -36,6 +36,7 @@ import org.nuxeo.audit.api.LogEntryBuilder;
 import org.nuxeo.audit.service.AuditRouter;
 import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.ecm.core.api.DocumentModel;
+import org.nuxeo.ecm.core.api.event.DocumentEventCategories;
 import org.nuxeo.ecm.core.api.model.Property;
 import org.nuxeo.ecm.core.api.model.impl.ArrayProperty;
 import org.nuxeo.ecm.core.api.model.impl.primitives.BlobProperty;
@@ -59,9 +60,24 @@ public class AdvancedDocumentAuditListener implements EventListener {
     private static final List<String> SYSTEM_PROPS = Arrays.asList("dc:created", "dc:creator", "dc:modified",
             "dc:contributors");
 
-    public static final String EVENT_ID = "Property Modification";
+    public static final String EVENT_ID = "propertyModification";
 
-    public static final String CATEGORY = "Document";
+    /*
+     * Use Nuxeo's built-in "eventDocumentCategory" category rather than a custom one.
+     *
+     * Why this matters:
+     *  - Web UI's nuxeo-audit-search builds the i18n key as "eventCategory." + entry.category
+     *    (see elements/nuxeo-audit/nuxeo-audit-search.js). The default messages bundles ship
+     *    "eventCategory.eventDocumentCategory" => "Document" (translated in every locale).
+     *  - The category filter dropdown in the audit UI is fed from the "eventCategories"
+     *    vocabulary, which seeds "eventDocumentCategory" by default. Reusing this id means
+     *    our entries appear under the existing "Document" filter without any extra
+     *    contribution (no custom vocabulary entry, no custom messages*.json/.properties).
+     *  - The constant DocumentEventCategories.EVENT_DOCUMENT_CATEGORY is the canonical
+     *    value used by the platform (e.g. AbstractAuditBackend default category), so we
+     *    reference it instead of hardcoding the literal string.
+     */
+    public static final String CATEGORY = DocumentEventCategories.EVENT_DOCUMENT_CATEGORY;
 
     public static final String FIELD_NAME = "fieldname";
 

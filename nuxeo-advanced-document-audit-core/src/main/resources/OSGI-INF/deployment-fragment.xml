@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<fragment version="1">
+
+  <require>org.nuxeo.web.ui</require>
+
+  <install>
+    <!--
+      Append our translations onto the deployed Web UI and server-side i18n bundles.
+      The Nuxeo runtime's AppendCommand performs a real JSON merge (Jackson
+      ObjectNode.setAll) when both source and destination are .json files, so our
+      keys are added without clobbering existing ones. For .properties files it
+      falls back to a plain byte-append with a leading newline, which is fine since
+      java.util.Properties last-wins-load picks our entry.
+
+      Two i18n key spaces are needed for full Web UI integration:
+
+      1. Audit table column "Performed Action" — resolved client-side by
+         nuxeo-audit-search.js via i18n('eventType.' + entry.eventId), reading
+         the Web UI JSON bundles served at /nuxeo/ui/i18n/messages*.json.
+         Key shipped: "eventType.propertyModification".
+
+      2. Audit filter dropdown "Performed Actions" — populated from the
+         eventTypes vocabulary via the Directory.SuggestEntries automation
+         operation, which resolves the row's "label" column server-side as a
+         BARE key (no prefix) against messages*.properties via
+         I18NUtils.getMessageString("messages", label, locale).
+         Key shipped: "propertyModification" (must match the eventTypes row's
+         label column, which is also "propertyModification" by convention).
+
+      Note: adding the row to the eventTypes vocabulary itself is NOT done by
+      this fragment — the directory framework has no declarative "append rows"
+      extension (BaseDirectoryDescriptor.merge replaces the dataFile rather than
+      appending it). See README for the one-shot REST call to register the row.
+    -->
+    <delete path="${bundle.fileName}.tmp"/>
+    <mkdir path="${bundle.fileName}.tmp"/>
+    <unzip from="${bundle.fileName}" to="${bundle.fileName}.tmp">
+      <include>web/nuxeo.war/**</include>
+    </unzip>
+
+    <!-- Web UI audit table column label (client-side i18n, JSON merge) -->
+    <append from="${bundle.fileName}.tmp/web/nuxeo.war/ui/i18n/messages.json"
+            to="nuxeo.war/ui/i18n/messages.json" addNewLine="true"/>
+
+    <!-- Server-side i18n: filter dropdown labels resolved by Directory.SuggestEntries -->
+    <append from="${bundle.fileName}.tmp/web/nuxeo.war/WEB-INF/classes/messages.properties"
+            to="nuxeo.war/WEB-INF/classes/messages.properties" addNewLine="true"/>
+
+    <delete path="${bundle.fileName}.tmp"/>
+  </install>
+
+</fragment>

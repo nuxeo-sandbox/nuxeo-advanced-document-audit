@@ -5,12 +5,14 @@
 
     <extension target="org.nuxeo.audit.service.AuditComponent" point="routes">
         <documentation>
-            Register the "Property Modification" event so that entries produced by the
+            Register the "propertyModification" event so that entries produced by the
             AdvancedDocumentAuditListener are routed to the default audit backend.
+            In LTS 2025 the AuditRouter silently drops entries whose eventId is not
+            declared in a route — keep this in sync with EVENT_ID in the listener.
         </documentation>
         <route name="advanced-document-audit">
             <backend name="default" />
-            <event name="Property Modification" />
+            <event name="propertyModification" />
         </route>
     </extension>
 
