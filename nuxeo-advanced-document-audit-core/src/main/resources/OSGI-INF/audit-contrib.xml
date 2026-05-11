@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<component name="org.nuxeo.audit.advanced.audit-contrib">
+
+    <require>org.nuxeo.audit.service.AuditComponent.defaultContrib</require>
+
+    <extension target="org.nuxeo.audit.service.AuditComponent" point="routes">
+        <documentation>
+            Register the "Property Modification" event so that entries produced by the
+            AdvancedDocumentAuditListener are routed to the default audit backend.
+        </documentation>
+        <route name="advanced-document-audit">
+            <backend name="default" />
+            <event name="Property Modification" />
+        </route>
+    </extension>
+
+</component>

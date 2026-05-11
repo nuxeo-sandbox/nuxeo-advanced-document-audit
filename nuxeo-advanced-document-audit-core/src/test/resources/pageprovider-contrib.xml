@@ -6,11 +6,11 @@
                point="providers">
 
         <genericPageProvider name="GetAllEntriesByEvent"
-                             class="org.nuxeo.ecm.platform.audit.api.AuditPageProvider">
+                             class="org.nuxeo.audit.provider.AuditPageProvider">
             <pattern>
-                from LogEntry log where log.eventId = ? AND log.docUUID = ?
+                SELECT * FROM LogEntry WHERE eventId = ? AND docUUID = ?
             </pattern>
-            <sort column="log.id" ascending="true"/>
+            <sort column="id" ascending="true"/>
             <pageSize>2</pageSize>
         </genericPageProvider>
 

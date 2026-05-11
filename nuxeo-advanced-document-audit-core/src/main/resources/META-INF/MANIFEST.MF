@@ -6,4 +6,5 @@ Bundle-Version: 1.0.0
 Bundle-Name: nuxeo-advanced-document-audit-core
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: nuxeo-advanced-document-audit-core;singleton=true
-Nuxeo-Component: OSGI-INF/listener-contrib.xml
+Nuxeo-Component: OSGI-INF/listener-contrib.xml,
+ OSGI-INF/audit-contrib.xml

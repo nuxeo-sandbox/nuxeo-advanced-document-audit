@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+  <Appenders>
+    <Console name="CONSOLE" target="SYSTEM_OUT">
+      <PatternLayout pattern="%d{HH:mm:ss,SSS} %-5p [%C{1}] %m%n"/>
+    </Console>
+    <File name="FILE" fileName="target/trace.log" append="false">
+      <PatternLayout pattern="%d{HH:mm:ss,SSS} %-5p [%C{1}] %m%n"/>
+    </File>
+  </Appenders>
+  <Loggers>
+    <Logger name="org.nuxeo" level="trace" additivity="false">
+      <AppenderRef ref="FILE"/>
+    </Logger>
+    <Root level="info">
+      <AppenderRef ref="CONSOLE"/>
+    </Root>
+  </Loggers>
+</Configuration>

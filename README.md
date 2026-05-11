@@ -10,6 +10,14 @@ It outputs old/new values for the fields modified.
 
 It is provided as an example, a source of inspiration showing how to add custom entries to the audit log, don't hesitate to fork and tune, depending on your exact needs.
 
+## LTS 2025 Compatibility
+
+This plugin targets Nuxeo LTS 2025 (`2025.1.0-SNAPSHOT`, target platform `[2025.0,2026.99)`).
+
+The Nuxeo audit subsystem was rewritten in LTS 2025; this plugin was migrated to the new
+`AuditRouter` / `LogEntry.builder()` API. See [Migration-to-LTS_2025.md](./Migration-to-LTS_2025.md)
+for details.
+
 ## Build
 
 Assuming maven is correctly setup on your computer:

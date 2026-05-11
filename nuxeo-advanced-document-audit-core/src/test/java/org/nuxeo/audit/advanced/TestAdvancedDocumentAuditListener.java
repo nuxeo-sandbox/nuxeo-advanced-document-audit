@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2015-2016 Nuxeo SA (http://nuxeo.com/) and others.
+ * (C) Copyright 2015-2025 Nuxeo SA (http://nuxeo.com/) and others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,14 @@
 
 package org.nuxeo.audit.advanced;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.List;
+
+import jakarta.inject.Inject;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,28 +37,20 @@ import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.impl.blob.FileBlob;
-import org.nuxeo.ecm.platform.audit.api.LogEntry;
+import org.nuxeo.audit.api.LogEntry;
 import org.nuxeo.ecm.platform.query.api.PageProvider;
 import org.nuxeo.ecm.platform.query.api.PageProviderService;
 import org.nuxeo.runtime.test.runner.Deploy;
 import org.nuxeo.runtime.test.runner.Features;
 import org.nuxeo.runtime.test.runner.FeaturesRunner;
-import org.nuxeo.runtime.test.runner.LocalDeploy;
-
-import javax.inject.Inject;
-import java.io.File;
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.List;
+import org.nuxeo.runtime.test.runner.TransactionalFeature;
 
 @RunWith(FeaturesRunner.class)
-@Features({AutomationFeature.class, AuditFeature.class})
-@Deploy({"nuxeo-advanced-document-audit-core"})
-@LocalDeploy({
-        "nuxeo-advanced-document-audit-core:pageprovider-contrib.xml",
-        "nuxeo-advanced-document-audit-core:schema-contrib.xml",
-})
+// AuditFeature must come before CoreFeature (pulled by AutomationFeature) per LTS 2025
+// AuditCleanerFeature ordering requirement.
+@Features({ AuditFeature.class, AutomationFeature.class })
+@Deploy("nuxeo-advanced-document-audit-core:pageprovider-contrib.xml")
+@Deploy("nuxeo-advanced-document-audit-core:schema-contrib.xml")
 public class TestAdvancedDocumentAuditListener {
 
     private static final String PAGE_PROVIDER_NAME = "GetAllEntriesByEvent";
@@ -58,10 +58,13 @@ public class TestAdvancedDocumentAuditListener {
     private static final String NEW_STRING_VALUE = "testNewValue";
 
     @Inject
-    CoreSession session;
+    protected CoreSession session;
 
     @Inject
-    PageProviderService pps;
+    protected PageProviderService pps;
+
+    @Inject
+    protected TransactionalFeature txFeature;
 
     @Before
     public void onceExecutedBeforeAll() {
@@ -78,16 +81,15 @@ public class TestAdvancedDocumentAuditListener {
         List<LogEntry> entries = getEntries(doc);
         Assert.assertEquals("Audit contains one entry", 1, entries.size());
         LogEntry entry = entries.get(0);
-        checkEntry(entry, "dc:title",
-                AdvancedDocumentAuditListener.EMPTY_VALUE, NEW_STRING_VALUE);
+        checkEntry(entry, "dc:title", AdvancedDocumentAuditListener.EMPTY_VALUE, NEW_STRING_VALUE);
     }
 
     @Test
     public void testMultiStringModification() throws IOException, OperationException {
         DocumentModel doc = session.createDocumentModel("/", "File", "File");
-        doc.setPropertyValue("dc:subjects", new String[]{"science"});
+        doc.setPropertyValue("dc:subjects", new String[] { "science" });
         doc = session.createDocument(doc);
-        doc.setPropertyValue("dc:subjects", new String[]{"art"});
+        doc.setPropertyValue("dc:subjects", new String[] { "art" });
         session.saveDocument(doc);
         session.save();
         List<LogEntry> entries = getEntries(doc);
@@ -106,8 +108,7 @@ public class TestAdvancedDocumentAuditListener {
         List<LogEntry> entries = getEntries(doc);
         Assert.assertEquals("Audit contains one entry", 1, entries.size());
         LogEntry entry = entries.get(0);
-        checkEntry(entry, "test:complex/string",
-                AdvancedDocumentAuditListener.EMPTY_VALUE, NEW_STRING_VALUE);
+        checkEntry(entry, "test:complex/string", AdvancedDocumentAuditListener.EMPTY_VALUE, NEW_STRING_VALUE);
     }
 
     @Test
@@ -116,7 +117,7 @@ public class TestAdvancedDocumentAuditListener {
         doc = session.createDocument(doc);
 
         HashMap<String, Serializable> complexValue = new HashMap<>();
-        complexValue.put("stringlist", new String[]{NEW_STRING_VALUE});
+        complexValue.put("stringlist", new String[] { NEW_STRING_VALUE });
         doc.setPropertyValue("test:complex", complexValue);
 
         session.saveDocument(doc);
@@ -125,10 +126,8 @@ public class TestAdvancedDocumentAuditListener {
         List<LogEntry> entries = getEntries(doc);
         Assert.assertEquals("Audit contains one entry", 1, entries.size());
         LogEntry entry = entries.get(0);
-        checkEntry(entry, "test:complex/stringlist",
-                AdvancedDocumentAuditListener.EMPTY_VALUE, NEW_STRING_VALUE);
+        checkEntry(entry, "test:complex/stringlist", AdvancedDocumentAuditListener.EMPTY_VALUE, NEW_STRING_VALUE);
     }
-
 
     @Test
     public void testBlobPropertyModification() throws IOException, OperationException {
@@ -144,26 +143,20 @@ public class TestAdvancedDocumentAuditListener {
         checkEntry(entry, "content", AdvancedDocumentAuditListener.EMPTY_VALUE, "text.txt");
     }
 
-
     private void checkEntry(LogEntry entry, String fieldname, String expectedOldValue, String expectedNewValue) {
-        Assert.assertEquals(
-                fieldname,
-                entry.getExtendedInfos().get(AdvancedDocumentAuditListener.FIELD_NAME).getValue(String.class));
-        Assert.assertEquals(
-                expectedNewValue,
-                entry.getExtendedInfos().get(AdvancedDocumentAuditListener.NEW_VALUE).getValue(String.class));
-        Assert.assertEquals(
-                expectedOldValue,
-                entry.getExtendedInfos().get(AdvancedDocumentAuditListener.OLD_VALUE).getValue(String.class));
+        Assert.assertEquals(fieldname, entry.getExtended().get(AdvancedDocumentAuditListener.FIELD_NAME));
+        Assert.assertEquals(expectedNewValue, entry.getExtended().get(AdvancedDocumentAuditListener.NEW_VALUE));
+        Assert.assertEquals(expectedOldValue, entry.getExtended().get(AdvancedDocumentAuditListener.OLD_VALUE));
     }
 
+    @SuppressWarnings("unchecked")
     private List<LogEntry> getEntries(DocumentModel doc) {
-        PageProvider<?> pp = pps.getPageProvider(
-                PAGE_PROVIDER_NAME, null, Long.valueOf(5), Long.valueOf(0),
-                new HashMap<>(), AdvancedDocumentAuditListener.EVENT_ID, doc.getId());
+        // Wait for asynchronous audit writes to complete before querying.
+        txFeature.nextTransaction();
+        PageProvider<?> pp = pps.getPageProvider(PAGE_PROVIDER_NAME, null, 5L, 0L, new HashMap<>(),
+                AdvancedDocumentAuditListener.EVENT_ID, doc.getId());
         Assert.assertNotNull("Page Provider is missing", pp);
         return (List<LogEntry>) pp.getCurrentPage();
     }
-
 
 }

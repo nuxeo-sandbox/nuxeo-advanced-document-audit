@@ -29,3 +29,5 @@ bin/
 *-bak
 *.bak
 *~gen
+.opencode
+AGENTS.md
